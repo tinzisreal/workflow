@@ -1,0 +1,12 @@
+{
+  "servers": {
+    "gitnexus": {
+      "command": "npx",
+      "args": ["-y", "gitnexus", "mcp"]
+    },
+    "openclaw-memory": {
+      "command": "npx",
+      "args": ["-y", "openclaw", "mcp"]
+    }
+  }
+}
