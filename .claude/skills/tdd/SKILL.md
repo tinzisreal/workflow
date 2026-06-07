@@ -1,35 +1,132 @@
 ---
 name: "tdd"
-description: "Tool for tdd workflow"
+description: "Use when implementing any feature or bugfix, before writing implementation code, combined with AgentMemory validation."
 ---
 
 # Test-Driven Development Skill (/tdd)
 
-This skill implements the strict Superpowers Test-Driven Development (TDD) workflow in the workspace.
+This skill implements the strict Superpowers Test-Driven Development (TDD) workflow in the workspace, combined with AgentMemory to track successful test outcomes.
 
-## 🎯 Purpose
-Ensure all code changes are verified by writing unit/integration tests before writing the implementation code.
+Write the test first. Watch it fail. Write minimal code to pass.
 
-## 🛠️ Step-by-Step Execution Protocol
+<IMPORTANT>
+If you didn't watch the test fail, you don't know if it tests the right thing.
+Violating the letter of the rules is violating the spirit of the rules.
+</IMPORTANT>
 
-### 🟩 Step 1: Write a Failing Test (Red Phase)
-1. Read target requirements or user instructions.
-2. Write one or more unit tests in the test suite that cover the new feature or fix.
-3. Run the test suite.
-4. **Exit Condition**: Ensure the new tests fail with a clear assertion error (verifying that the tests are active).
+## The Iron Law
 
-### 🟦 Step 2: Minimal Code Implementation (Green Phase)
-1. Write the minimal amount of code in the source files to make the tests pass.
-2. Follow Karpathy's "Simplicity First" guideline (see below)—do not add extra logic, helper functions, or extensions.
-3. Run the test suite.
-4. **Exit Condition**: Verify that all tests, including the new tests, pass successfully.
+```
+NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
+```
 
-### 🟨 Step 3: Refactor (Refactor Phase)
-1. Clean up code styling, extract magic variables, and improve readability of the implemented code.
-2. Run the test suite after every minor change to ensure no regressions.
-3. Call `agentmemory` to save the successful test outcomes and implementation footprint.
+Write code before the test? Delete it. Start over.
+**No exceptions:**
+- Don't keep it as "reference".
+- Don't "adapt" it while writing tests.
+- Don't look at it.
+- Delete means delete.
+Implement fresh from tests. Period.
 
+---
 
+## Red-Green-Refactor Cycle
+
+```dot
+digraph tdd_cycle {
+    rankdir=LR;
+    red [label="RED\nWrite failing test", shape=box, style=filled, fillcolor="#ffcccc"];
+    verify_red [label="Verify fails\ncorrectly", shape=diamond];
+    green [label="GREEN\nMinimal code", shape=box, style=filled, fillcolor="#ccffcc"];
+    verify_green [label="Verify passes\nAll green", shape=diamond];
+    refactor [label="REFACTOR\nClean up", shape=box, style=filled, fillcolor="#ccccff"];
+    next [label="Next", shape=ellipse];
+
+    red -> verify_red;
+    verify_red -> green [label="yes"];
+    verify_red -> red [label="wrong\nfailure"];
+    green -> verify_green;
+    verify_green -> refactor [label="yes"];
+    verify_green -> green [label="no"];
+    refactor -> verify_green [label="stay\ngreen"];
+    verify_green -> next;
+    next -> red;
+}
+```
+
+### 1. RED - Write Failing Test
+Write one minimal test showing what should happen.
+* **Requirements**:
+  - Focus on one behavior.
+  - Clear descriptive name.
+  - Real code (no mocks unless unavoidable).
+
+### 2. Verify RED - Watch It Fail (MANDATORY)
+Run the test suite using the workspace runner.
+* Confirm:
+  - Test fails (not syntax error).
+  - Failure message is expected (verifying active test).
+  - Fails because feature is missing (not typos).
+
+### 3. GREEN - Minimal Code
+Write the simplest code to make the tests pass.
+* Follow Karpathy's **Simplicity First** principle — do not add extra logic, speculative abstractions, or helper functions.
+
+### 4. Verify GREEN - Watch It Pass (MANDATORY)
+Run the test suite.
+* Confirm:
+  - Test passes.
+  - Other tests still pass (no regression).
+  - Output pristine (no errors or warnings).
+
+### 5. REFACTOR - Clean Up
+* Remove duplication, improve naming, and extract helpers.
+* Run the tests after every minor change to ensure no regressions.
+* Call `agentmemory` to save the successful test outcomes and implementation footprint.
+
+---
+
+## Why Order Matters
+
+* **Tests written after code pass immediately**: Passing immediately proves nothing. It might test the wrong thing, test the implementation rather than behavior, or miss edge cases.
+* **Manual testing is ad-hoc**: No record, cannot be re-run automatically when code changes. Automated tests are systematic.
+* **Sunk cost fallacy**: Keeping unverified code is technical debt. Delete and rewrite with TDD.
+* **TDD is pragmatic**: It finds bugs before committing, prevents regressions, documents behavior, and enables refactoring.
+
+---
+
+## Common Rationalizations
+
+| Excuse | Reality |
+|--------|---------|
+| "Too simple to test" | Simple code breaks. Test takes 30 seconds. |
+| "I'll test after" | Tests passing immediately prove nothing. |
+| "Already manually tested" | Ad-hoc ≠ systematic. No record, can't re-run. |
+| "Deleting X hours is wasteful" | Sunk cost fallacy. Keeping unverified code is technical debt. |
+| "Keep as reference, write tests first" | You'll adapt it. That's testing after. Delete means delete. |
+
+## Red Flags - STOP and Start Over
+* Code before test.
+* Test after implementation.
+* Test passes immediately.
+* Can't explain why test failed.
+* "Keep as reference" or "adapt existing code".
+* "Already spent X hours, deleting is wasteful".
+* "TDD is dogmatic, I'm being pragmatic".
+
+---
+
+## Verification Checklist
+Before marking work complete:
+- [ ] Every new function/method has a test.
+- [ ] Watched each test fail before implementing.
+- [ ] Each test failed for expected reason.
+- [ ] Wrote minimal code to pass each test.
+- [ ] All tests pass.
+- [ ] Output pristine.
+- [ ] Mocks only if unavoidable.
+
+---
 
 ## 🧠 Karpathy-Inspired Coding Guidelines
 

@@ -1,27 +1,85 @@
 ---
 name: "review-code"
-description: "Tool for review-code workflow"
+description: "Use when requesting or receiving code review, before merging or implementing suggestions, combined with GitNexus and AgentMemory."
 ---
 
 # Code Review Skill (/review-code)
 
-This skill automates a smart codebase review by combining **GitNexus** graph mapping and **TencentDB-Agent-Memory** history.
+This skill automates and structures the code review process, divided into **Requesting Code Review** (dispatching reviewers) and **Receiving Code Review** (evaluating feedback factually and technically, avoiding performative agreement).
 
-## 🎯 Purpose
-Analyze recent changes in the workspace, check them against known historic bugs from the memory database, and suggest improvements based on Karpathy's guidelines.
+---
 
-## 🛠️ Step-by-Step Execution Protocol
-1. **Query Memory**:
-   - Ask the `agentmemory` service for the most common errors or design decisions recorded in this project.
-2. **Scan Codebase**:
-   - Ask `gitnexus` to identify the most heavily modified files or files with the highest incoming dependency connections.
-3. **Analyze**:
-   - Compare the current modified files against the historical bug list to see if any old bugs are being reintroduced.
-   - Verify if any modifications violate the "Simplicity First" or "Surgical Edits" principles.
-4. **Report**:
-   - Present a clean markdown table summarizing potential risks, and suggest simple fixes.
+## Part 1: Requesting Code Review
 
+Dispatch a code reviewer subagent to catch issues before they compound. The reviewer gets precisely crafted context for evaluation — never your session's history. This keeps the reviewer focused on the work product, not your thought process.
 
+### When to Request Review
+* **Mandatory**:
+  - After each task in subagent-driven development.
+  - After completing major features.
+  - Before merging changes into `main`.
+* **Optional but valuable**:
+  - When stuck (fresh perspective).
+  - Before refactoring (baseline check).
+  - After fixing complex bugs.
+
+### How to Request
+1. **Identify Git SHAs**:
+   ```bash
+   BASE_SHA=$(git rev-parse HEAD~1)  # or origin/main
+   HEAD_SHA=$(git rev-parse HEAD)
+   ```
+2. **Scan Codebase & Map Changes**:
+   - Ask `gitnexus` to identify the modified files and check incoming/outgoing dependency blast radius.
+   - Query `agentmemory` for historical errors or design decisions recorded in this project.
+3. **Dispatch Code Reviewer Subagent**:
+   Provide the reviewer with:
+   - **Description**: Summary of what was built.
+   - **Plan / Requirements**: What the code is expected to do.
+   - **SHAs**: The starting (`BASE_SHA`) and ending (`HEAD_SHA`) commits.
+4. **Act on feedback**:
+   - Fix **Critical** issues immediately.
+   - Fix **Important** issues before proceeding.
+   - Note **Minor** issues for later.
+
+---
+
+## Part 2: Receiving Code Review
+
+Code review requires technical evaluation and verification, not emotional performance.
+
+### The Response Pattern
+1. **READ**: Complete feedback without reacting.
+2. **UNDERSTAND**: Restate the technical requirements in your own words. Ask for clarification if needed.
+3. **VERIFY**: Check the reviewer's feedback against codebase reality.
+4. **EVALUATE**: Confirm if suggestions are technically sound for this codebase.
+5. **RESPOND**: Give a technical acknowledgment or a reasoned pushback.
+6. **IMPLEMENT**: Implement changes one item at a time, testing each.
+
+### Forbidden Responses (DO NOT USE)
+* "You're absolutely right!"
+* "Great point!" / "Excellent feedback!"
+* "Let me implement that now" (before verifying).
+
+**Instead**:
+- Restate the technical requirement factually.
+- Just start working (actions speak louder than words).
+- If pushing back, provide technical reasoning.
+
+### Strict "No Thanks" Rule
+When feedback is correct, state the fix factually.
+* **Good**: *"Fixed. [Brief description of what changed]"* or *"Good catch - [specific issue]. Fixed in [location]."*
+* **Bad**: *"Thanks for catching that!"* / *"Thanks for [anything]"* / **ANY expression of gratitude**. State the fix factually and move on.
+
+### Skepticism & Pushback
+Push back when the suggestion:
+- Breaks existing functionality.
+- Lacks full context.
+- Violates YAGNI (e.g., adding "professional" features that aren't used).
+- Conflicts with prior architectural decisions.
+- If suggestions are unclear, **STOP** and ask for clarification before implementing.
+
+---
 
 ## 🧠 Karpathy-Inspired Coding Guidelines
 
