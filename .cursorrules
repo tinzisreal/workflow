@@ -5,16 +5,16 @@ Include these instructions in your Cursor system prompt or composer settings:
 ## Custom Slash Commands Map
 When the user invokes one of the following slash commands, read the corresponding skill file and execute the defined protocol step-by-step:
 
-- **`/review-code`**: Read [review-code/SKILL.md](file:///d:/agent-workflow/.claude/skills/review-code/SKILL.md) and execute code review.
-- **`/explain-flow`**: Read [explain-flow/SKILL.md](file:///d:/agent-workflow/.claude/skills/explain-flow/SKILL.md) to trace call graphs.
-- **`/debug-smart`**: Read [debug-smart/SKILL.md](file:///d:/agent-workflow/.claude/skills/debug-smart/SKILL.md) to perform history-aware debugging.
-- **`/verify-changes`**: Read [verify-changes/SKILL.md](file:///d:/agent-workflow/.claude/skills/verify-changes/SKILL.md) to run tests and persist memory.
-- **`/refactor`**: Read [refactor/SKILL.md](file:///d:/agent-workflow/.claude/skills/refactor/SKILL.md) to plan and execute codebase-safe refactoring.
-- **`/tdd`**: Read [tdd/SKILL.md](file:///d:/agent-workflow/.claude/skills/tdd/SKILL.md) to run a strict Test-Driven Development flow.
-- **`/test-smart`**: Read [test-smart/SKILL.md](file:///d:/agent-workflow/.claude/skills/test-smart/SKILL.md) to execute targeted test runs and save status.
-- **`/brainstorm`**: Read [brainstorm/SKILL.md](file:///d:/agent-workflow/.claude/skills/brainstorm/SKILL.md) to brainstorm multiple approaches and check feasibility.
-- **`/read-doc`**: Read [read-doc/SKILL.md](file:///d:/agent-workflow/.claude/skills/read-doc/SKILL.md) to parse PDF, Word, Excel, and other external documents into Markdown using Microsoft MarkItDown.
-- **`/solve`**: Read [solve/SKILL.md](file:///d:/agent-workflow/.claude/skills/solve/SKILL.md) to automatically triage any task, select the optimal planning or direct patch route, and execute with all tools active.
+- **`/review-code`**: Read [.claude/skills/review-code/SKILL.md](.claude/skills/review-code/SKILL.md) and execute code review.
+- **`/explain-flow`**: Read [.claude/skills/explain-flow/SKILL.md](.claude/skills/explain-flow/SKILL.md) to trace call graphs.
+- **`/debug-smart`**: Read [.claude/skills/debug-smart/SKILL.md](.claude/skills/debug-smart/SKILL.md) to perform history-aware debugging.
+- **`/verify-changes`**: Read [.claude/skills/verify-changes/SKILL.md](.claude/skills/verify-changes/SKILL.md) to run tests and persist memory.
+- **`/refactor`**: Read [.claude/skills/refactor/SKILL.md](.claude/skills/refactor/SKILL.md) to plan and execute codebase-safe refactoring.
+- **`/tdd`**: Read [.claude/skills/tdd/SKILL.md](.claude/skills/tdd/SKILL.md) to run a strict Test-Driven Development flow.
+- **`/test-smart`**: Read [.claude/skills/test-smart/SKILL.md](.claude/skills/test-smart/SKILL.md) to execute targeted test runs and save status.
+- **`/brainstorm`**: Read [.claude/skills/brainstorm/SKILL.md](.claude/skills/brainstorm/SKILL.md) to brainstorm multiple approaches and check feasibility.
+- **`/read-doc`**: Read [.claude/skills/read-doc/SKILL.md](.claude/skills/read-doc/SKILL.md) to parse PDF, Word, Excel, and other external documents into Markdown using Microsoft MarkItDown.
+- **`/solve`**: Read [.claude/skills/solve/SKILL.md](.claude/skills/solve/SKILL.md) to automatically triage any task, select the optimal planning or direct patch route, and execute with all tools active.
 
 
 
