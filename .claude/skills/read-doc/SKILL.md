@@ -1,39 +1,48 @@
 ---
 name: "read-doc"
-description: "Tool for read-doc workflow"
+description: "Convert binary and formatted documents (PDF, DOCX, XLSX, PPTX, HTML, ZIP, etc.) to Markdown using MarkItDown and extract requirements."
 ---
 
 # Read Document Skill (/read-doc)
 
-This skill converts external files (PDF, DOCX, XLSX, PPTX, HTML, ZIP, etc.) into clean Markdown using Microsoft's **MarkItDown** tool, enabling AI agents to read and analyze their content.
+This skill utilizes Microsoft's **MarkItDown** tool to convert binary and formatted documents into clean Markdown, allowing the agent to parse business requirements, database schemas, or API specs into its active context.
 
-## 🎯 Purpose
-Extract structured text, tables, and contents from binary files or formatted documents and load them into the agent's context.
+---
 
 ## 🛠️ Step-by-Step Execution Protocol
 
-### 🟩 Step 1: Check Environment
-1. Verify if the `markitdown` CLI command is available on the system.
-2. If not installed, prompt the user or install it locally:
-   `pip install markitdown`
+### 🟩 Step 1: Environment & Dependency Validation
+1. Verify if Python is installed and check for the `markitdown` CLI tool.
+2. If `markitdown` is missing:
+   - Request permission to install it:
+     ```bash
+     python -m pip install --upgrade markitdown
+     ```
+   - If Python itself is missing, halt execution and ask the user to install Python (v3.9+).
 
 ### 🟦 Step 2: Convert Document to Markdown
-1. Ask the user for the absolute or relative path to the target document.
-2. Run the `markitdown` conversion command in the shell:
+1. Ask the user for the absolute path to the target document.
+2. Execute the conversion command in the shell, redirecting the output to a temporary Markdown file inside the workspace:
    ```bash
-   markitdown path/to/document.pdf > path/to/document.md
+   markitdown "path/to/source.pdf" > "path/to/output.md"
    ```
-3. If conversion fails, capture the error logs and suggest standard formatting fixes.
+3. **Verify Output**: Check that the generated `.md` file is not empty and contains readable text. If the conversion fails or returns garbage:
+   - Identify if the file is password-protected or scanned image-only (requires OCR).
+   - Report the limitation factually to the user.
 
-### 🟨 Step 3: Analyze Document Content
-1. Read the newly generated markdown file.
-2. Under Karpathy's "Simplicity First" guideline (see below), summarize the document's core structure, extracting only the sections, tables, or specifications that are directly relevant to the current coding task.
-3. Save the markdown content or key extracted facts into `agentmemory` so the agent can refer to it in future sessions without re-parsing.
+### 🟨 Step 3: Extract & Synthesize Context
+1. Read the converted markdown file.
+2. **Surgical Extraction**: Extract only the information relevant to the current coding task:
+   - For database files: Extract table schemas, indexes, and constraints.
+   - For SRS docs: Extract feature definitions, user flows, and business invariants.
+   - For API specs: Extract endpoints, payloads, headers, and response codes.
+3. Present the synthesized facts in clean markdown tables.
 
-### 🟧 Step 4: Clean Up (Optional)
-1. If the generated markdown is temporary, delete it after extraction, keeping only the synthesized summary in the conversation context.
+### 🟧 Step 4: Cache to Memory & Clean Up
+1. Call `agentmemory`/`openclaw-memory` to save the synthesized requirements, tables, and constraints. This ensures the facts survive session resets.
+2. **Clean Workspace**: Delete the temporary `output.md` file using command execution tools to keep the git history pristine.
 
-
+---
 
 ## 🧠 Karpathy-Inspired Coding Guidelines
 

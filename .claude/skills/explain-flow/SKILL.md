@@ -1,29 +1,61 @@
 ---
 name: "explain-flow"
-description: "Tool for explain-flow workflow"
+description: "Trace call graphs, dependencies, and execution flow of target code using GitNexus."
 ---
 
 # Explain Flow Skill (/explain-flow)
 
-This skill traces the call graph and execution flow of a specific code target.
+This skill traces the call graph, execution sequence, and module dependencies of a specific code target, creating a visual map to help agents and human developers understand the codebase architecture before modifying files.
 
-## 🎯 Purpose
-Map call chains, dependencies, and execution flow of a specific function, class, or module using GitNexus.
+---
 
 ## 🛠️ Step-by-Step Execution Protocol
-1. **Locate Target**:
-   - Ask the user for the target class or function name.
-2. **Retrieve Code Map**:
-   - Call `gitnexus` graph/dependency tools to locate where the target is defined.
-   - Trace all files and functions that *call* this target (incoming connections).
-   - Trace all files and functions that *are called by* this target (outgoing connections).
-3. **Draft Architecture Explanation**:
-   - Explain the lifecycle of the target in simple terms.
-   - Present a Mermaid diagram showing the call graph.
-4. **Enforce Karpathy principle**:
-   - Keep the explanation brief and simple. Avoid over-explaining unrelated structures.
 
+### 🟩 Step 1: Identify the Target Symbol
+* Ask the user for the class, method, function, or module name they want to analyze.
+* Confirm its general purpose or location in the project if known.
 
+### 🟦 Step 2: Extract Definitions & Context (GitNexus)
+* Call `gitnexus.context` to inspect the target symbol's:
+  - Definition line numbers and file location.
+  - Method signatures, parameters, and return types.
+  - Imports and docstrings.
+* Read the file section around the target definition using file reading tools.
+
+### 🟨 Step 3: Trace Call Chains (Incoming & Outgoing Connections)
+* **Trace Callers (Incoming)**: Run `gitnexus.query` to find all files and functions that *call* this target. This defines the blast radius of changes to this symbol.
+* **Trace Callees (Outgoing)**: Run `gitnexus.query` to identify what this target *calls* internally. This defines the dependencies of the target.
+* **Trace Module Coupling**: Identify the files involved and how tightly coupled they are to the target.
+
+### 🟧 Step 4: Draft Structured Explanation
+Analyze the gathered data and output a concise report containing:
+1. **Lifecycle & Control Flow**: Detail exactly what happens when the target is invoked, parameter values, data transformations, and return states.
+2. **Side-effects & State Changes**: List any database writes, file operations, or state modifications triggered.
+3. **Mermaid Flow Diagram**: Render a clear Mermaid call graph or sequence diagram showing the dependencies and callers.
+4. **Key Risks & Constraints**: Highlight potential pitfalls (e.g., race conditions, lock blocks, or legacy dependencies).
+
+---
+
+## Call Graph Visualization Template
+
+Use this Mermaid diagram format when explaining flows:
+
+```mermaid
+graph TD
+    subgraph Callers (Incoming)
+        C1[Caller Module A] --> Target
+        C2[Caller Module B] --> Target
+    end
+
+    Target[Target Function/Class]
+
+    subgraph Dependencies (Outgoing)
+        Target --> D1[Dependency Module X]
+        Target --> D2[Dependency Module Y]
+    end
+```
+
+---
 
 ## 🧠 Karpathy-Inspired Coding Guidelines
 

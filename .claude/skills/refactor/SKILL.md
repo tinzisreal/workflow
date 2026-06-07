@@ -1,50 +1,82 @@
 ---
 name: "refactor"
-description: "Tool for refactor workflow"
+description: "Safe, structured refactoring of target code using GitNexus graph mapping, AgentMemory checks, and TDD workflows."
 ---
 
 # Smart Refactor Skill (/refactor)
 
-This skill performs a safe, structured refactoring of target code using **GitNexus** graph mapping, **TencentDB-Agent-Memory** validation, and **Superpowers** TDD workflows.
+This skill implements a safe, disciplined refactoring process to improve readability, performance, or extensibility while ensuring zero regressions and keeping changes strictly surgical.
 
-## 🎯 Purpose
-Refactor code to improve readability, performance, or extensibility while ensuring zero regressions and keeping changes strictly surgical.
+<HARD-GATE>
+Do NOT refactor any code without first establishing a baseline test suite that verifies the existing behavior. If no tests exist for the target module, you MUST write them before proceeding with the refactor.
+</HARD-GATE>
 
-## 🛠️ Step-by-Step Execution Protocol
+## Anti-Pattern: "Refactoring by Vibe"
+Refactoring without knowing the full blast radius, changing adjacent files "while you are here," or introducing speculative abstractions for hypothetical future needs. These cause hidden regressions and context rot.
 
-### 🟩 Step 1: Codebase Impact Analysis (GitNexus Graph RAG)
-1. **Query Symbol Context**: Call the `gitnexus` tool `context` on the target function, class, or module to map its callers, callees, and imports.
-2. **Analyze Blast Radius**: Call the `gitnexus` tool `impact` on the target files to assess the impact and dependency risks of the refactoring.
-3. **Handle Renames Coordinatedly**: If the refactor involves renaming symbols, call the `gitnexus` tool `rename` to automatically propogate modifications across the codebase.
-4. List all affected downstream files in a "Downstream Dependency Map".
+---
 
-### 🟦 Step 2: Memory & Design Check (TencentDB-Agent-Memory)
-1. Query `agentmemory` for past design discussions, performance trade-offs, or constraints related to the target code.
-2. Ensure the proposed refactoring does not violate historical engineering requirements or repeat past architectural errors.
+## Checklist
 
-### 🟨 Step 3: Write the Refactor Plan (Superpowers Phase 1)
-1. Write a structured refactor design to `implementation_plan.md`.
-2. Define:
-   - What needs to change (Surgical target).
-   - What must NOT change (Invariants).
-   - Success criteria.
-3. **WAIT** for explicit user approval before modifying code.
+You MUST complete these steps in order:
 
-### 🟧 Step 4: Write Regression Tests First (Superpowers TDD Workflow)
-1. Before refactoring the source code, write unit/integration tests that cover the current functionality of the target code.
-2. Run these tests to establish a baseline of 100% success.
+1. **Map Codebase Context & Usages** — Call `gitnexus.context` on the target class or function to find all callers, callees, imports, and definitions.
+2. **Analyze Blast Radius** — Call `gitnexus.impact` to assess the blast radius. List all affected downstream files in a "Downstream Dependency Map".
+3. **Query Memory Constraints** — Search `agentmemory` for past design discussions, performance pitfalls, or constraints related to the target code.
+4. **Draft Refactoring Plan** — Write the plan to `docs/superpowers/plans/YYYY-MM-DD-refactor-<target>.md`. Define the surgical target, invariants, and success criteria.
+5. **Establish Baseline Tests** — Run the existing test suite to ensure everything is green. If tests do not cover the target code, write regression tests using `/tdd` first.
+6. **Surgical Implementation** — Apply the refactoring using the simplest possible code. Match the existing style and avoid over-engineering.
+7. **Verify Scope & Regressions** — Call `gitnexus.detect_changes` to ensure only the planned files were modified. Run all tests.
+8. **Document & Persist** — Update `walkthrough.md` and save the refactoring outcome details into `agentmemory`.
 
-### 🟥 Step 5: Surgical Implementation & Verification (Karpathy Skills & Superpowers Phase 2)
-1. Apply the refactoring using minimal, clean code. Do not introduce speculative abstractions or generic wrappers unless explicitly requested.
-2. **Verify Change Scope**: Call the `gitnexus` tool `detect_changes` on the git workspace to verify that only the planned files were altered.
-3. Run the tests. If they fail, immediately trigger `/debug-smart`.
-4. If they pass, update `walkthrough.md` with:
-   - Git diff of the refactored code.
-   - Output logs of the test suite.
-5. Call `agentmemory` to save the refactoring session details (why it was refactored and what was modified).
+---
 
+## Process Flow
 
+```dot
+digraph refactoring_flow {
+    "Locate Target & Map Usages\n(gitnexus.context)" [shape=box];
+    "Assess Blast Radius\n(gitnexus.impact)" [shape=box];
+    "Verify Memory Invariants\n(agentmemory)" [shape=box];
+    "Draft Refactor Plan" [shape=box];
+    "User Approves Plan?" [shape=diamond];
+    "Baseline Tests Exist?" [shape=diamond];
+    "Write Regression Tests\n(/tdd)" [shape=box];
+    "Run Baseline Tests (GREEN)" [shape=box];
+    "Surgical Refactoring" [shape=box];
+    "Detect Changes & Verify\n(gitnexus.detect_changes)" [shape=box];
+    "Tests Pass?" [shape=diamond];
+    "Fix regressions (/debug-smart)" [shape=box];
+    "Document & Save (agentmemory)" [shape=doublecircle];
 
+    "Locate Target & Map Usages\n(gitnexus.context)" -> "Assess Blast Radius\n(gitnexus.impact)";
+    "Assess Blast Radius\n(gitnexus.impact)" -> "Verify Memory Invariants\n(agentmemory)";
+    "Verify Memory Invariants\n(agentmemory)" -> "Draft Refactor Plan";
+    "Draft Refactor Plan" -> "User Approves Plan?";
+    "User Approves Plan?" -> "Draft Refactor Plan" [label="no"];
+    "User Approves Plan?" -> "Baseline Tests Exist?" [label="yes"];
+    "Baseline Tests Exist?" -> "Write Regression Tests\n(/tdd)" [label="no"];
+    "Baseline Tests Exist?" -> "Run Baseline Tests (GREEN)" [label="yes"];
+    "Write Regression Tests\n(/tdd)" -> "Run Baseline Tests (GREEN)";
+    "Run Baseline Tests (GREEN)" -> "Surgical Refactoring";
+    "Surgical Refactoring" -> "Detect Changes & Verify\n(gitnexus.detect_changes)";
+    "Detect Changes & Verify\n(gitnexus.detect_changes)" -> "Tests Pass?";
+    "Tests Pass?" -> "Fix regressions (/debug-smart)" [label="no"];
+    "Fix regressions (/debug-smart)" -> "Detect Changes & Verify\n(gitnexus.detect_changes)";
+    "Tests Pass?" -> "Document & Save (agentmemory)" [label="yes"];
+}
+```
+
+---
+
+## Refactoring Best Practices
+
+*   **Refactor Small Steps**: Keep refactoring commits tiny. If you are renaming a method and modifying its implementation, do them as separate commits.
+*   **Coordinate Renames**: If renaming public symbols or API surfaces, use `gitnexus.rename` to propagate the changes across the workspace.
+*   **Isolate Side-Effects**: Break highly coupled logic into clean, single-purpose functions communicating through well-defined interfaces.
+*   **Keep comments up to date**: If you change the behavior or interface, ensure docstrings and comments are updated surgicaly.
+
+---
 
 ## 🧠 Karpathy-Inspired Coding Guidelines
 

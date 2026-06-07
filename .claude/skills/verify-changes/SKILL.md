@@ -1,28 +1,72 @@
 ---
 name: "verify-changes"
-description: "Tool for verify-changes workflow"
+description: "Verify codebase modifications, execute test runners, detect file change scope using GitNexus, and persist session memory."
 ---
 
 # Verify Changes Skill (/verify-changes)
 
-This skill automates testing, verification, and session documentation.
+This skill automates testing, file modification scope checks, session documentation, and memory database updates before completing a task.
 
-## 🎯 Purpose
-Execute test suites, generate a summary of edits, and save the session context into TencentDB-Agent-Memory.
+---
 
 ## 🛠️ Step-by-Step Execution Protocol
-1. **Execute Tests**:
-   - Locate test files and run them using the workspace test runner commands.
-2. **Collect Results**:
-   - Check if all tests pass. If there are failures, stop and initiate `/debug-smart`.
-3. **Write Walkthrough**:
-   - Generate `walkthrough.md` with:
-     - Checklist of completed tasks from `task.md`.
-     - Raw test runner console output.
-4. **Persist Session**:
-   - Save the conversation transcript, file edits, and outcomes into the `agentmemory` database.
 
+### 🟩 Step 1: Run Automated Tests
+* Locate and run all relevant test files. If the workspace is React/Spring Boot, run:
+  - Frontend: `npm test` or `npm run test`
+  - Backend: `./mvnw test` or `./gradlew test`
+* **Evaluate Results**:
+  - **All Pass**: Proceed to Step 2.
+  - **Failures**: Capture error outputs, halt execution immediately, and run `/debug-smart` to resolve regressions.
 
+### 🟦 Step 2: Validate Change Scope (GitNexus)
+* Call `gitnexus.detect_changes` on the workspace directory.
+* Compare the modified files with the approved `implementation_plan.md` tasks list:
+  - If any unplanned files were modified, restore/discard those changes (unless they were explicitly approved refactoring steps).
+  - Clean up any unused imports, dead variables, or debugging print statements introduced during implementation.
+
+### 🟨 Step 3: Write Walkthrough Document
+Generate a detailed `walkthrough.md` file in the workspace containing:
+1. **Goal Verification**: Explicit statement of what was accomplished and how it meets the original user request.
+2. **Completed Task List**: Markdown check list mapping to `task.md`.
+3. **Change Log Table**: Listing modified file paths, added lines count, and deleted lines count.
+4. **Test Run Console Output**: Raw code blocks showing the passing tests.
+
+### 🟧 Step 4: Persist Session Memory
+* Call `agentmemory`/`openclaw-memory` tools to save the session outcome.
+* Store:
+  - Description of the feature/bugfix implemented.
+  - List of modified files and symbols.
+  - Test command used and outcome status.
+
+---
+
+## Process Flow
+
+```dot
+digraph verify_flow {
+    "Locate & Execute Tests" [shape=box];
+    "All Tests Pass?" [shape=diamond];
+    "Trigger /debug-smart" [shape=box];
+    "Detect Changes\n(gitnexus.detect_changes)" [shape=box];
+    "Unplanned Files Modified?" [shape=diamond];
+    "Discard Unplanned Changes\n& Clean Dead Code" [shape=box];
+    "Write walkthrough.md" [shape=box];
+    "Persist Session to Memory\n(agentmemory)" [shape=doublecircle];
+
+    "Locate & Execute Tests" -> "All Tests Pass?";
+    "All Tests Pass?" -> "Trigger /debug-smart" [label="no"];
+    "Trigger /debug-smart" -> "Locate & Execute Tests";
+    "All Tests Pass?" -> "Detect Changes\n(gitnexus.detect_changes)" [label="yes"];
+    "Detect Changes\n(gitnexus.detect_changes)" -> "Unplanned Files Modified?";
+    "Unplanned Files Modified?" -> "Discard Unplanned Changes\n& Clean Dead Code" [label="yes"];
+    "Discard Unplanned Changes\n& Clean Dead Code" -> "Write walkthrough.md";
+    "Unplanned Files Modified?" -> "Write walkthrough.md" [label="no"];
+    "Write walkthrough.md" -> "Persist Session to Memory\n(agentmemory)";
+}
+```
+
+---
 
 ## 🧠 Karpathy-Inspired Coding Guidelines
 

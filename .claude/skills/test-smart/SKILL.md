@@ -1,36 +1,43 @@
 ---
 name: "test-smart"
-description: "Tool for test-smart workflow"
+description: "Run targeted unit/integration tests on changed components, run full regression suites, and log outcomes in memory."
 ---
 
 # Smart Test Skill (/test-smart)
 
-This skill executes test suites and documents results locally and in the memory database.
+This skill executes scoped tests on recently modified files and runs full regression checks on the workspace codebase, saving execution logs to both the walkthrough and memory.
 
-## 🎯 Purpose
-Run verification checks on the workspace code and log status for future debug sessions.
+---
 
 ## 🛠️ Step-by-Step Execution Protocol
 
 ### 🟩 Step 1: Detect Changed Files (GitNexus)
-1. Call `gitnexus` tool `detect_changes` to identify files with unsaved or unstaged changes.
-2. Locate the corresponding test files for those modified components.
+* Call the `gitnexus` tool `detect_changes` on the workspace directory to locate modified files.
+* Map each modified source file to its corresponding test file:
+  - E.g., `src/features/operation/OperationConsole.tsx` -> `src/features/operation/__tests__/OperationConsole.test.tsx`
+  - E.g., `src/main/java/.../MetaFlowService.java` -> `src/test/java/.../MetaFlowServiceTest.java`
 
-### 🟦 Step 2: Run Target Tests
-1. Execute the test runner (e.g., npm test, pytest, cargo test) targeting ONLY the test files related to the modified components to save time.
-2. If tests fail:
-   - Capture console output.
-   - Automatically trigger `/debug-smart` to fix the bugs.
+### 🟦 Step 2: Run Scoped Target Tests
+* Execute the test runner targeting **only** the mapped test files to get fast feedback.
+  - Command example: `npm test path/to/changed.test.tsx -- -t "specific test description"`
+* **Assess Scoped Outcomes**:
+  - **Pass**: Proceed to Step 3.
+  - **Fail**: Capture the assertion error, halt execution, and run `/debug-smart` to fix the bugs.
 
 ### 🟨 Step 3: Run Full Regression Suite
-1. Run the entire project test suite to verify that no adjacent components are broken.
-2. Collect code coverage metrics if available.
+* Run the entire project test suite to verify that no adjacent modules or APIs were broken.
+  - Frontend: `npm test` or `npm run test`
+  - Backend: `./mvnw test` or `./gradlew test`
+* Check code coverage reports if generated, ensuring the new code meets coverage requirements.
 
-### 🟧 Step 4: Save Verification & Memory
-1. Log test results, test command, and coverage percentage to `walkthrough.md`.
-2. Call `agentmemory` to save the verification footprint.
+### 🟧 Step 4: Document & Save
+* Write the test execution stats to `walkthrough.md`:
+  - Run command.
+  - Total tests run, passed count, failed count.
+  - Coverage percentage.
+* Call `agentmemory`/`openclaw-memory` to save the verification footprint.
 
-
+---
 
 ## 🧠 Karpathy-Inspired Coding Guidelines
 
