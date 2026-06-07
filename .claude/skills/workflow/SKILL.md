@@ -1,6 +1,6 @@
 ---
 name: "workflow"
-description: "Workflow protocol for planning, exploring codebase, modifying code, and saving context to memory."
+description: "System-level AI workspace rules and behavioral protocol combining GSD state management and superpowers workflow."
 ---
 # SYSTEM-LEVEL AI WORKSPACE RULES & BEHAVIORAL PROTOCOL (CLAUDE.md)
 
@@ -25,29 +25,33 @@ stateDiagram-v2
 
 ### 🟩 Phase 1: Context Recall & Memory Initialization
 - **Action**: You MUST query the memory system before analyzing any codebase files.
-- **Tools**: Call `agentmemory` tools (specifically retrieve, query, or search).
+- **Tools**: Call `agentmemory` or `openclaw-memory` tools (retrieve, query, or search).
 - **Rule**: Search for key terms in the user request. Record findings in your internal chain-of-thought (CoT).
 - **Exit Condition**: You must state in your response: *"Memory query completed. Found [X] relevant historical entries."*
 
 ### 🟦 Phase 2: Codebase Structure & Relation Extraction
-- **Action**: Use the Graph RAG engine to mapping dependencies.
-- **Tools**: Call `gitnexus` tools.
+- **Action**: Use the Graph RAG engine to map dependencies.
+- **Tools**: Call `gitnexus` tools (`context`, `impact`, `query`).
 - **Rule**: Never run random grep searches or view multiple files blindly. Use `gitnexus` to query the knowledge graph first to locate the files related to the request.
 - **Exit Condition**: You must state the exact file paths you intend to read or modify.
 
-### 🟨 Phase 3: Architectural Design & Plan (Superpowers)
-- **Action**: Write an implementation plan.
+### 🟨 Phase 3: Architectural Design & Plan (Spec-Driven State Management)
+- **Action**: Brainstorm design options and write a detailed implementation plan.
 - **Rule**: You are PROHIBITED from modifying any source code files in this phase.
-- **Output File**: Write to `implementation_plan.md`. It must contain:
-  1. Detailed goal description.
-  2. Proposed edits categorized by file path.
-  3. Tradeoffs & risks.
-  4. Test plan (automated and manual cases).
-- **Exit Condition**: Await user approval on the plan before moving to Phase 4.
+- **Spec-Driven State Management (GSD)**:
+  * For LARGE tasks, brainstorm design options and write the finalized spec to `docs/superpowers/specs/YYYY-MM-DD-<feature-name>-design.md`.
+  * Write the detailed implementation plan to `docs/superpowers/plans/YYYY-MM-DD-<feature-name>.md`.
+- **Plan Requirements (No Placeholders)**:
+  - Plan must contain Goals, Architecture, and Tech Stack.
+  - Tasks must be broken into bite-sized units (2-5 mins per task).
+  - Each task must define: Failing test code snippet -> Run command and expected failure output -> Minimal code block to pass -> Run command and expected pass -> Commit command.
+  - Strictly no "TODO", "TBD", or vague requirements.
+- **Exit Condition**: Await user approval on the plan before moving to Phase 4. Offer the Handoff Choice: **Subagent-Driven Development** (recommended to prevent context rot) vs **Inline Execution**.
 
-### 🟧 Phase 4: Surgical Implementation (Karpathy Skills)
+### 🟧 Phase 4: Surgical Implementation (Karpathy Skills & Handoffs)
 - **Action**: Modify code.
 - **Rules**:
+  - **Handoff Execution**: Execute task-by-task using the route chosen by the user (dispatching isolated subagents per task is recommended for large changes to prevent context rot).
   - **Surgical Edits**: Only modify lines directly related to the task. Never format unrelated lines, never clean up dead code unless requested, and never update imports unless broken.
   - **Simplicity First**: Write the simplest code possible. Do not introduce abstractions (classes, generic interfaces) unless absolutely necessary.
   - Keep all existing comments/docstrings intact unless they are explicitly being rewritten.
@@ -56,10 +60,11 @@ stateDiagram-v2
 ### 🟥 Phase 5: Verification & Summarization
 - **Action**: Run tests and generate report.
 - **Rule**: Execute test suites or manual verification commands.
+- **State Validation**: Call `gitnexus.detect_changes` to ensure only the planned files were altered.
 - **Output File**: Write a `walkthrough.md` detailing:
   - List of modified files with diff links.
   - Test run outputs showing success.
-- **Memory Save**: Call `agentmemory` store/save tool to persist the session context.
+- **Memory Save**: Call `agentmemory`/`openclaw-memory` store/save tool to persist the session context.
 
 ---
 
@@ -83,12 +88,11 @@ All file modifications must use the following standard diff format when presenti
 ```
 
 ### Reference Workspace Artifacts
-- **Task Tracker**: [task.md](file:///d:/agent-workflow/task.md)
-- **Implementation Plan**: [implementation_plan.md](file:///d:/agent-workflow/implementation_plan.md)
-- **Walkthrough**: [walkthrough.md](file:///d:/agent-workflow/walkthrough.md)
+- **Task Tracker**: [task.md](file:///c:/Users/lenovo/Downloads/ThucTap/LDOP/temp_workflow/task.md)
+- **Implementation Plan**: [implementation_plan.md](file:///c:/Users/lenovo/Downloads/ThucTap/LDOP/temp_workflow/implementation_plan.md)
+- **Walkthrough**: [walkthrough.md](file:///c:/Users/lenovo/Downloads/ThucTap/LDOP/temp_workflow/walkthrough.md)
 
-
-
+---
 
 ## 🧠 Karpathy-Inspired Coding Guidelines
 
